@@ -1,0 +1,16 @@
+---
+
+workspace: /var/www/majora-cache
+
+timezone: Europe/Paris
+
+sites:
+  - { name: 'majora-cache', docroot: '/var/www/majora-cache', server_name: 'majora-cache.dev', template: 'vhost.symfony.j2' }
+
+mysql:
+  databases:
+    - { name: 'majora-cache' }
+  users:
+    - { name: 'majora-cache' }
+
+php_version: '5.6'
