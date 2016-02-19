@@ -6,8 +6,11 @@
 #                                                       #
 #########################################################
 
-- src: rvm_io.rvm1-ruby
-  name: ruby
+# - src: rvm_io.rvm1-ruby
+#   name: ruby
 
 - src: DavidWittman.redis
   name: redis
+
+- src: virtualenv.varnish
+  name: varnish

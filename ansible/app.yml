@@ -12,7 +12,8 @@
     - php
     - composer
     - mysql
-    - sass
+    # - sass
+    - varnish
   vars_files:
     - vars.yml
     - vars.local.yml
