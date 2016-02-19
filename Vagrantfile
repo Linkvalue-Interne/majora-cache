@@ -12,6 +12,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.proxy.no_proxy = "localhost,127.0.0.1"
     end
 
+    if Vagrant.has_plugin?("vagrant-proxyconf")
+        config.proxy.http     = "http://192.168.1.249:3128/"
+        config.proxy.https    = "http://192.168.1.249:3128/"
+        config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+    end
+
     config.vm.define :local, primary: true do |local|
 
         # Ubuntu version
