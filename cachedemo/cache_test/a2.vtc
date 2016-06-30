@@ -1,0 +1,67 @@
+varnishtest "test config cache demo"
+
+server s1 {
+	rxreq
+	expect req.url == '/'
+	txreq
+
+	rxreq
+	expect req.url == '/pass'
+	txreq
+} -start
+
+varnish v1 -vcl+backend {
+  sub vcl_recv {
+    // Add a Surrogate-Capability header to announce ESI support.
+    set req.http.Surrogate-Capability = "abc=ESI/1.0";
+
+    if (req.url ~ "/pass" ) {
+       return(pass);
+    }
+
+    return (hash);
+  }
+
+  # Not cache 400 - 500 status requests
+  sub vcl_backend_response {
+    if (beresp.status >= 400 && beresp.status <= 600) {
+        set beresp.ttl = 0s;
+    }
+  }
+
+  sub vcl_backend_response {
+    // Check for ESI acknowledgement and remove Surrogate-Control header
+    if (beresp.http.Surrogate-Control ~ "ESI/1.0") {
+        unset beresp.http.Surrogate-Control;
+        set beresp.do_esi = true;
+    }
+  }
+} -start
+
+
+client c1 {
+	txreq -url '/pass' 
+	rxresp 
+	expect resp.status == 200
+	
+	txreq -url '/' -Etag 'W/"1e227c8838f01a6ad2cd89bed580d53a"'
+	rxresp
+	
+	txreq -url '/notfound'
+	rxresp
+	expect resp.status == 404
+} 
+
+
+#varnish v1 -expect cache_miss == 0
+#varnish v1 -expect cache_hit == 0
+ 
+client c1 -run
+ 
+varnish v1 -expect cache_miss == 1
+varnish v1 -expect cache_hit == 1
+ 
+#client c1 -run
+ 
+#varnish v1 -expect cache_miss == 1
+#varnish v1 -expect cache_hit == 1

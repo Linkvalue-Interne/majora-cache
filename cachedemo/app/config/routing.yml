@@ -2,3 +2,8 @@ app:
     path: /
     defaults:
         _controller: AppBundle:Default:index
+
+app_test:
+    path: /pass
+    defaults:
+        _controller: AppBundle:Default:passed
