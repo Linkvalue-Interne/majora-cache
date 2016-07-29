@@ -3,7 +3,19 @@ app:
     defaults:
         _controller: AppBundle:Default:index
 
-app_test:
+app_pass:
     path: /pass
     defaults:
-        _controller: AppBundle:Default:passed
+        _controller: AppBundle:Default:index
+
+app_etag:
+    path: /etag
+    defaults:
+        _controller: AppBundle:Default:etag
+    methods:  [GET]
+
+app_content_create:
+    path: /etag
+    defaults:
+        _controller: AppBundle:Default:contentCreate
+    methods:  [POST]

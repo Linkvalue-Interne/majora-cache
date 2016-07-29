@@ -5,9 +5,15 @@ server s1 {
 	expect req.url == '/'
 	txresp
 
+  accept
 	rxreq
 	expect req.url == '/pass'
 	txresp
+
+  accept
+  rxreq
+  expect req.url == '/not_exists'
+  txresp -status 404
 } -start
 
 varnish v1 -vcl+backend {
@@ -23,13 +29,14 @@ varnish v1 -vcl+backend {
   }
 
   # No cache 400 - 500 status requests
-  sub vcl_backend_response {
-    if (beresp.status >= 400 && beresp.status <= 600) {
-        set beresp.ttl = 0s;
-    }
-  }
+  #sub vcl_backend_response {
+    
+  #}
 
   sub vcl_backend_response {
+    if (beresp.status >= 400 && beresp.status <= 600) {
+        set beresp.http.s-maxage = 0;
+    }
     // Check for ESI acknowledgement and remove Surrogate-Control header
     if (beresp.http.Surrogate-Control ~ "ESI/1.0") {
         unset beresp.http.Surrogate-Control;
@@ -46,14 +53,22 @@ client c1 {
 } -run
 
 client c2 {
-        txreq -url '/pass'
-        rxresp
-        expect resp.status == 200
+  txreq -url '/pass'
+  rxresp
+  expect resp.status == 200
 } -run
 
+client c3 {
+  txreq -url '/not_exists'
+  rxresp
+  expect resp.status == 404
+  expect resp.http.s-maxage == 0
+} -run
 
-varnish v1 -expect cache_miss == 1
+varnish v1 -expect client_req == 3
+varnish v1 -expect cache_miss == 2
 varnish v1 -expect cache_hit == 0
+varnish v1 -expect s_pass == 1
  
 client c1 -run
  

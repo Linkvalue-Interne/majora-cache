@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-
+{% block title %}Cache expiration{% endblock %}
 {% block body %}
     <div id="wrapper">
         <div id="container">
@@ -87,10 +87,10 @@
 
 {% block javascripts %}
     <script type="text/javascript">
-    window.onload = function(){
-        setTimeout(function(){
-            window.location.reload();
-        }, 1500);
-    };
+    // window.onload = function(){
+    //     setTimeout(function(){
+    //         window.location.reload();
+    //     }, 1000);
+    // };
     </script>
 {% endblock %}

@@ -1,0 +1,46 @@
+vcl 4.0;
+
+# This is a basic VCL configuration file for varnish.  See the vcl(7)
+# man page for details on VCL syntax and semantics.
+#
+# Default backend definition.  Set this to point to your content
+# server.
+backend default {
+  .host = "127.0.0.1";
+  .port = "8000";
+}
+
+sub vcl_recv {
+    // Add a Surrogate-Capability header to announce ESI support.
+    set req.http.Surrogate-Capability = "abc=ESI/1.0";
+	
+    if (req.url ~ "/pass"  || req.method == "POST") {
+       return(pass);
+    }
+
+    return (hash);
+}
+# Set a header to track a cache HIT/MISS.
+sub vcl_deliver {
+  if (obj.hits > 0) {
+    set resp.http.X-Varnish-Cache = "HIT";
+  } 
+  else {
+    set resp.http.X-Varnish-Cache = "MISS";
+  }
+}
+
+# Not cache 400 - 500 status requests
+sub vcl_backend_response {
+    if (beresp.status >= 400 && beresp.status <= 600) {
+        set beresp.ttl = 0s;
+  }
+}
+
+sub vcl_backend_response {
+    // Check for ESI acknowledgement and remove Surrogate-Control header
+    if (beresp.http.Surrogate-Control ~ "ESI/1.0") {
+        unset beresp.http.Surrogate-Control;
+        set beresp.do_esi = true;
+    }
+}
